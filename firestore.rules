@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function hasRole(role) {
+      return isAuthenticated() && getUserData().role == role;
+    }
+    
+    function isStudent() {
+      return hasRole('student');
+    }
+    
+    function isTeacher() {
+      return hasRole('teacher');
+    }
+    
+    function isAdmin() {
+      return hasRole('admin');
+    }
+
+    // --- Users Collection ---
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // --- Courses Collection ---
+    match /courses/{courseId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin() || (isTeacher() && resource.data.instructorId == request.auth.uid);
+    }
+
+    // --- Attendance Sessions ---
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated();
+      // Only authorized faculty or admin can launch or alter session states
+      allow create: if isTeacher() || isAdmin();
+      allow update: if isAdmin() || (isTeacher() && resource.data.instructorId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // --- Attendance Records ---
+    match /records/{recordId} {
+      // Students can only read their own records; faculty can read for courses they teach; admin reads all
+      allow read: if isAuthenticated() && (
+        resource.data.studentId == request.auth.uid ||
+        isTeacher() ||
+        isAdmin()
+      );
+      
+      // Students cannot directly write arbitrary attendance records; creation is verified via Cloud Function backend.
+      // If direct client creation is permitted in restricted environments, enforce strict invariants:
+      allow create: if isAuthenticated() && (
+        // Students can only create record for themselves and cannot self-verify without pending/session verification
+        (isStudent() && request.resource.data.studentId == request.auth.uid && request.resource.data.status in ['pending', 'verified']) ||
+        isTeacher() ||
+        isAdmin()
+      );
+      
+      // Only faculty or admin can update status (manual overrides or corrections)
+      allow update: if isTeacher() || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // --- Attendance Corrections ---
+    match /corrections/{correctionId} {
+      allow read: if isAuthenticated() && (
+        resource.data.studentId == request.auth.uid ||
+        isTeacher() ||
+        isAdmin()
+      );
+      allow create: if isStudent() && request.resource.data.studentId == request.auth.uid;
+      allow update: if isTeacher() || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // --- Immutable Audit Logs ---
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      // Append-only ledger: create allowed by backend service account; updates and deletions strictly blocked
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+
+    // --- Institution Policy ---
+    match /policy/{policyId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}

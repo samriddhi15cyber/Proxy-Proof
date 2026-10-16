@@ -1,0 +1,6 @@
+{
+  "name": "ProxyProof — Smart Attendance & Anti-Proxy Platform",
+  "description": "Enterprise collegiate smart attendance platform featuring Bluetooth Low Energy (BLE) proximity verification, rotating session security, QR fallback, AI fraud pattern detection, and smart timetable intelligence.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

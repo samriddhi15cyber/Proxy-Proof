@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- University Editorial Color Palette -->
+    <color name="parchment_bg">#F6F1E8</color>
+    <color name="cream_surface">#FFFCF7</color>
+    <color name="burgundy_primary">#722F3E</color>
+    <color name="wine_hover">#54212D</color>
+    <color name="antique_gold">#C2A46D</color>
+    <color name="charcoal_text">#292723</color>
+    <color name="secondary_text">#77736D</color>
+    <color name="subtle_border">#E4DCD0</color>
+    <color name="pale_burgundy">#F0E3E5</color>
+    <color name="muted_green">#42664D</color>
+</resources>

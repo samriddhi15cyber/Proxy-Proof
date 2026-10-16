@@ -1,0 +1,108 @@
+{
+  "entities": {
+    "users": {
+      "title": "User",
+      "description": "Collegiate identities (students, faculty, administrators)",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["student", "teacher", "admin"] },
+        "studentId": { "type": "string" },
+        "facultyId": { "type": "string" },
+        "department": { "type": "string" },
+        "enrolledCourseIds": { "type": "array", "items": { "type": "string" } },
+        "assignedCourseIds": { "type": "array", "items": { "type": "string" } },
+        "avatarUrl": { "type": "string" }
+      },
+      "required": ["name", "email", "role", "department"]
+    },
+    "courses": {
+      "title": "Course",
+      "description": "Academic course sections and scheduling",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "title": { "type": "string" },
+        "section": { "type": "string" },
+        "instructorId": { "type": "string" },
+        "instructorName": { "type": "string" },
+        "room": { "type": "string" },
+        "credits": { "type": "number" },
+        "enrolledStudentIds": { "type": "array", "items": { "type": "string" } },
+        "totalSessionsHeld": { "type": "number" }
+      },
+      "required": ["code", "title", "instructorId", "room"]
+    },
+    "sessions": {
+      "title": "AttendanceSession",
+      "description": "Active and past classroom attendance windows with rotating cryptographic tokens",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "courseCode": { "type": "string" },
+        "instructorId": { "type": "string" },
+        "room": { "type": "string" },
+        "startedAt": { "type": "string", "format": "date-time" },
+        "expiresAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["active", "paused", "ended"] },
+        "allowedMethods": { "type": "array", "items": { "type": "string" } },
+        "minRssiThreshold": { "type": "number" },
+        "currentRotatingToken": { "type": "string" },
+        "tokenExpiresAt": { "type": "number" }
+      },
+      "required": ["courseId", "instructorId", "room", "status"]
+    },
+    "records": {
+      "title": "AttendanceRecord",
+      "description": "Official attendance verification log with hardware RSSI and method telemetry",
+      "type": "object",
+      "properties": {
+        "sessionId": { "type": "string" },
+        "courseId": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "method": { "type": "string", "enum": ["ble", "qr", "manual_override"] },
+        "status": { "type": "string", "enum": ["verified", "pending", "needs_review", "failed", "excused"] },
+        "rssi": { "type": "number" },
+        "deviceFingerprint": { "type": "string" },
+        "failureReason": { "type": "string" }
+      },
+      "required": ["sessionId", "courseId", "studentId", "status", "method"]
+    },
+    "corrections": {
+      "title": "CorrectionRequest",
+      "description": "Student appeals for duty leave, hackathons, or device failures",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "courseId": { "type": "string" },
+        "sessionDate": { "type": "string" },
+        "requestedStatus": { "type": "string" },
+        "reason": { "type": "string" },
+        "documentationUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "submittedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["studentId", "courseId", "sessionDate", "reason", "status"]
+    },
+    "auditLogs": {
+      "title": "AuditLogEntry",
+      "description": "Immutable security ledger for administrative compliance",
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string", "format": "date-time" },
+        "actorId": { "type": "string" },
+        "actorName": { "type": "string" },
+        "actorRole": { "type": "string" },
+        "action": { "type": "string" },
+        "targetType": { "type": "string" },
+        "targetId": { "type": "string" },
+        "details": { "type": "string" },
+        "ipAddress": { "type": "string" }
+      },
+      "required": ["timestamp", "actorId", "action", "details"]
+    }
+  }
+}
